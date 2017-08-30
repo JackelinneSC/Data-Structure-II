@@ -62,6 +62,7 @@
             this.Playlist_lb.Name = "Playlist_lb";
             this.Playlist_lb.Size = new System.Drawing.Size(243, 173);
             this.Playlist_lb.TabIndex = 4;
+            this.Playlist_lb.SelectedIndexChanged += new System.EventHandler(this.Playlist_lb_SelectedIndexChanged);
             // 
             // menuStrip1
             // 

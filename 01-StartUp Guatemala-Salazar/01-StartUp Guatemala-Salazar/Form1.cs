@@ -9,23 +9,26 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using TagLib;
+using System.Runtime.InteropServices;
 
 namespace _01_StartUp_Guatemala_Salazar
 {
     public partial class Form1 : Form
     {
-    
+
+        
         /// <summary>
         /// Atributes
         /// </summary>
         private string[] routes;
         List<Playlists> lists = new List<Playlists>();
         Playlists yourLibrary;
+             
 
         public Form1()
         {
             InitializeComponent();
-           
+            this.comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
 
         }
 
@@ -44,50 +47,41 @@ namespace _01_StartUp_Guatemala_Salazar
             openSong.FileName = "Search a new song";
             openSong.Filter = "file mp3|*.mp3";
             openSong.Multiselect = true;
-            //openSong.FilterIndex = 1;
             if (openSong.ShowDialog() == DialogResult.OK)
             {
                 axWindowsMediaPlayer1.URL = openSong.FileName;
                 routes = openSong.FileNames;
-                //Creat your library
+                //Creat your library, the main playlist
                 if (comboBox1.Items.Count == 0 || comboBox1.Items.Count ==1)
                 {
                     
                     if (comboBox1.Items.Count == 0)
                     {
-                        comboBox1.Items.Add("Your library");
-                        yourLibrary = new Playlists("Your library", "Your songs");
-                        foreach (var routes in routes)
-                        {
-                            addToList(routes, yourLibrary.name, yourLibrary);
-                        }
 
+                        comboBox1.Items.Add("Your library");
+                        comboBox1.SelectedIndex = 0;
+                        yourLibrary = new Playlists("Your library", "Your songs");
                         lists.Add(yourLibrary);
-                        printSogns(yourLibrary.playlist);
+                        CreatePlaylist(yourLibrary.name);
+                        
                     }
                     else
-                    {
-                        foreach (var routes in routes)
-                        {
-                            addToList(routes, yourLibrary.name, yourLibrary);
-                        }
-
-                    }
-                    
+                        CreatePlaylist(yourLibrary.name);
                 }
                 else
-                {
-                    createPlaylist(comboBox1.Text);                    
-                }
-                         
-                
+                    CreatePlaylist(comboBox1.Text);
             }
 
         }
-        private void addToList(string fileRoute, string nameList, Playlists actualList)
+        /// <summary>
+        /// Method to add songs to a playlist
+        /// </summary>
+        /// <param name="fileRoute">Song's path </param>
+        /// <param name="actualList">Actual playlist</param>
+        private void AddToList(string fileRoute, Playlists actualList)
         {
             SongsProperties newSong;
-            string filename = "", duration = "", songTitle = "", album = "", artist = "";
+            string filename = "", duration = "", songTitle = "", artist = "";
           
             try
             {
@@ -95,9 +89,8 @@ namespace _01_StartUp_Guatemala_Salazar
                 filename = Mp3file.Name;
                 duration = Mp3file.Properties.Duration.ToString();
                 songTitle = Mp3file.Tag.Title;
-                album = Mp3file.Tag.Album;
-                artist = Mp3file.Tag.FirstArtist;
-                newSong = new SongsProperties(songTitle, album, artist, duration, filename);
+                artist = Mp3file.Tag.FirstAlbumArtist; 
+                newSong = new SongsProperties(songTitle, artist, duration, filename);
                 actualList.playlist.Add(newSong);
                 actualList.searching.Add(songTitle.ToLower(), newSong);
                 actualList.routes.Add(fileRoute);
@@ -111,60 +104,41 @@ namespace _01_StartUp_Guatemala_Salazar
         }
 
         /// <summary>
-        /// Creat playlists
+        /// Creat playlist
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void newPlaylistToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            CreatPlayList newPlaylist = new CreatPlayList();
+            CreatPlayList newPlaylist = new CreatPlayList(); //New form
             newPlaylist.ShowDialog();
             Playlists newlist = new Playlists(newPlaylist.namelist, newPlaylist.description);
             lists.Add(newlist);
             comboBox1.Items.Add(newPlaylist.namelist);
 
         }
-        private void createPlaylist(string nameList)
+        /// <summary>
+        /// Method to create playlist
+        /// </summary>
+        /// <param name="nameList">Playlist name</param>
+        private void CreatePlaylist(string nameList)
         {
+            //Look for the playlist name and add the songs. Then print the songs.
             foreach (var lists in lists)
             {
                 if (lists.name == nameList )
                 {
                     foreach (var routes in routes)
                     {
-                        addToList(routes, lists.name, lists);
-                        printSogns(lists.playlist);
+                        AddToList(routes, lists);
+                        PrintPlaylist(lists.playlist);
                     }
+                    break;
                 }
-                else
-                {
-
-                    Playlists newPlaylist = new Playlists(comboBox1.Text);
-                    foreach (var routes in routes)
-                    {
-                        addToList(routes, newPlaylist.name, newPlaylist);
-                        printSogns(newPlaylist.playlist);
-                    }
-                }
+               
             }
         }
- 
-
-        private void saveDefaultSongs(List<string> songs)
-        {
-           
-         //   StreamWriter YourLibrary = new StreamWriter("c:\\YourLibrary.txt");
-                       
-           // YourLibrary.WriteLine(songs);
-
-            //YourLibrary.Close();
-        }
-        private void openDefaultSongs()
-        {
-
-        }
        
-      
        /// <summary>
        /// Close the program
        /// </summary>
@@ -175,7 +149,6 @@ namespace _01_StartUp_Guatemala_Salazar
             Application.Exit();
         }
 
-      
         /// <summary>
         ///Button to search music
         /// </summary>
@@ -186,18 +159,21 @@ namespace _01_StartUp_Guatemala_Salazar
             listBox1.Items.Clear();
             string songTitle = textBox1.Text;
             if (songTitle == "")
-            {
-                MessageBox.Show("Asegúrate de escribir el nombre de la canción y de Agregar canciones a tu librería para poder buscarlas.");
-            }
+                MessageBox.Show("Write the song tittle", "Oh no!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+
             else
-                searchSong(songTitle);
+                SearchSong(songTitle);
         }
-        private void searchSong(string key)
+        /// <summary>
+        /// Method to search a song by its key
+        /// </summary>
+        /// <param name="key"></param>
+        private void SearchSong(string key)
         {
             try
             {
                 Playlists obj;
-                if (comboBox1.SelectedIndex.Equals(-1) || comboBox1.SelectedIndex.Equals(0))
+                if (comboBox1.SelectedIndex.Equals(-1) || comboBox1.SelectedIndex.Equals(0)) //it means that is in the main playlist "your library"
                     obj = new Playlists("Your library");
                 else
                     obj = new Playlists(comboBox1.Text);
@@ -210,12 +186,9 @@ namespace _01_StartUp_Guatemala_Salazar
                     listBox1.Items.Add(element.artist + " - " + element.nameSong + ".mp3");
                     listBox1.Items.Add("Duration: " + element.duration);
                     axWindowsMediaPlayer1.URL = element.filePath;
-                    printSogns(lists.playlist);
+                    PrintPlaylist(lists.playlist);
                     if (element != null)
-                    {
                         return;
-                    }
-
                 }
                 
             }
@@ -230,7 +203,7 @@ namespace _01_StartUp_Guatemala_Salazar
         /// Print songs of each playlist
         /// </summary>
         /// <param name="play"></param>
-        private void printSogns(List<SongsProperties> play)
+        private void PrintPlaylist(List<SongsProperties> play)
         {
             Playlist_lb.Items.Clear();
             foreach (var lists in play)
@@ -263,19 +236,23 @@ namespace _01_StartUp_Guatemala_Salazar
                 else
                 {
                     option += "4";
-                    sortPlaylist(option);
+                    SortPlaylist(option);
                 }
                    
             }
             else
             {
                 option += "3";
-                sortPlaylist(option);
+                SortPlaylist(option);
             }
                 
         
         }
-        private void sortPlaylist(string option)
+        /// <summary>
+        /// Method to sort using lambda
+        /// </summary>
+        /// <param name="option"></param>
+        private void SortPlaylist(string option)
         {
             Playlists obj;
             if (comboBox1.SelectedIndex.Equals(-1) || comboBox1.SelectedIndex.Equals(0))
@@ -287,21 +264,28 @@ namespace _01_StartUp_Guatemala_Salazar
             {
                 if (lists.name == obj.name)
                 {
-                    lists.playlist.Sort((a, b) =>
+                    lists.playlist.Sort((song1, song2) =>
                     {
-                        int comparacion1 = compare(option, a, b);
-                        if (comparacion1 == 0)
-                            return compare(option, a, b);
+                        int comparenumber = Compare(option, song1, song2);
+                        if (comparenumber == 0)
+                            return Compare(option, song1, song2);
                         else
-                            return comparacion1;
+                            return comparenumber;
                     });
-
+                    
                 }
-                printSogns(lists.playlist);
+                PrintPlaylist(lists.playlist);
                 
             }
         }
-        private int compare(string option, SongsProperties a, SongsProperties b)
+        /// <summary>
+        /// Compare values to the sort method
+        /// </summary>
+        /// <param name="option">ID for each type of sort</param>
+        /// <param name="a">A song</param>
+        /// <param name="b">Other song</param>
+        /// <returns></returns>
+        private int Compare(string option, SongsProperties a, SongsProperties b)
         {
             switch (option)
             {
@@ -325,27 +309,48 @@ namespace _01_StartUp_Guatemala_Salazar
         /// <param name="e"></param>
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
+            
             Playlists obj = new Playlists(comboBox1.Text, "");
             foreach (var lists in lists)
             {
                 if (lists.name == obj.name)
                 {
-                    printSogns(lists.playlist);
+                    PrintPlaylist(lists.playlist);
                     axWindowsMediaPlayer1.Ctlcontrols.stop();
                     break;
                 }
             }
            
         }
-
-        private void button1_Click_1(object sender, EventArgs e)
+        /// <summary>
+        /// The user can select any song from the playlist but if this list is sort before it will be a error.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Playlist_lb_SelectedIndexChanged(object sender, EventArgs e)
         {
-            axWindowsMediaPlayer1.Ctlcontrols.previous();
-        }
+            foreach (var lists in lists)
+            {
+                if (lists.name == comboBox1.Text)
+                {
+                    try
+                    {
+                        string[] rutas = lists.routes.ToArray();
+                        axWindowsMediaPlayer1.URL = rutas[Playlist_lb.SelectedIndex];
+                        //This message is because the routes from each song in the playlist is independet of the sort of itself.
+                        MessageBox.Show("If your are having some problems to play your music upload our new version. Coming out on October 20 :)!", "New version", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                        break;
+                    }
+                    catch (Exception)
+                    {
+                       //There is an exception when is the first time using the program
+                    }
+                    
+                }
+                    
+            }
+         
 
-        private void button2_Click(object sender, EventArgs e)
-        {
-            axWindowsMediaPlayer1.Ctlcontrols.next();
         }
 
     }

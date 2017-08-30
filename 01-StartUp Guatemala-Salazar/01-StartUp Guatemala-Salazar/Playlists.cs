@@ -13,6 +13,7 @@ namespace _01_StartUp_Guatemala_Salazar
         public List<SongsProperties> playlist { get; set; }
         public Dictionary<string, SongsProperties> searching { get; set; }
         public List<string> routes { get; set; }
+        public string[] rut { get; set; }
         
         public Playlists(string name, string description)
         {
@@ -21,7 +22,7 @@ namespace _01_StartUp_Guatemala_Salazar
             playlist = new List<SongsProperties>();
             searching = new Dictionary<string, SongsProperties>();
             routes = new List<string>();
-
+           
         }
         public Playlists(string name)
         {

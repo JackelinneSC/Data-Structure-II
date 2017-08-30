@@ -6,34 +6,21 @@ using System.Threading.Tasks;
 
 namespace _01_StartUp_Guatemala_Salazar
 {
-    class SongsProperties: IComparable
+    class SongsProperties
     {
+        //Atributes
         public string nameSong { get; set; }
-        public string album { get; set; }
-        public string artist { get; set; }
         public string duration { get; set; }
         public string filePath { get; set; }
-
-        public SongsProperties(string namesong, string album, string artist, string duration, string filepath)
+        public string artist { get; set; }
+        //Constructor
+        public SongsProperties(string nameSong, string artist, string duration, string filePath)
         {
-            nameSong = namesong;
-            this.album = album;
-            this.artist = artist;
+            this.nameSong = nameSong;
             this.duration = duration;
-            filePath = filepath;
+            this.filePath = filePath;
+            this.artist = artist;
         }
-        public int CompareTo(object obj)
-        {
-            if (obj == null)
-                return 1;
-            SongsProperties song = obj as SongsProperties;
-            if (song == null)
-            {
-                return 1;
-            }
-            return string.Compare(this.nameSong, song.nameSong);
-           
-
-        }
+      
     }
 }
