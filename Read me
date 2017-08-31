@@ -1,0 +1,3 @@
+Hi user!
+I recommend you to check out the folder "taglib" whitin the project. That is the library that i use to get the audio's meta-data. 
+It is necessary to add a reference from that library to the project. 
