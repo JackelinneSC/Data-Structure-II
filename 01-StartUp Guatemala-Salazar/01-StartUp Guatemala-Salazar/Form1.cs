@@ -335,11 +335,17 @@ namespace _01_StartUp_Guatemala_Salazar
                 {
                     try
                     {
-                        string[] rutas = lists.routes.ToArray();
-                        axWindowsMediaPlayer1.URL = rutas[Playlist_lb.SelectedIndex];
-                        //This message is because the routes from each song in the playlist is independet of the sort of itself.
-                        MessageBox.Show("If your are having some problems to play your music upload our new version. Coming out on October 20 :)!", "New version", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                        break;
+                        List<SongsProperties> a = lists.playlist;
+                        foreach (SongsProperties b in a)
+                        {
+                            if (b.nameSong == a.ElementAt(Playlist_lb.SelectedIndex).nameSong)
+                            {
+                                axWindowsMediaPlayer1.URL = b.filePath;
+                                break;
+                            }
+                            
+                        }
+                        
                     }
                     catch (Exception)
                     {
